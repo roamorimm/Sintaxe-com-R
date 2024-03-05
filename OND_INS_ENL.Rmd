@@ -1,0 +1,338 @@
+---
+title: "OND"
+output: html_document
+date: "2023-10-26"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(udpipe)
+library(lattice)
+#vignette("udpipe-tryitout", package = "udpipe")
+#vignette("udpipe-annotation", package = "udpipe")
+#vignette("udpipe-universe", package = "udpipe")
+#vignette("udpipe-usecase-postagging-lemmatisation", package = "udpipe")
+# An overview of keyword extraction techniques: https://bnosac.github.io/udpipe/docs/doc7.html
+#vignette("udpipe-usecase-topicmodelling", package = "udpipe")
+#vignette("udpipe-parallel", package = "udpipe")
+#vignette("udpipe-train", package = "udpipe")
+library(textplot) 
+library(data.table) 
+library(ggraph) 
+library(concaveman) 
+library(ggplot2) 
+library(BTM)
+library(ggforce)
+library(igraph) 
+
+
+set.seed(1001)
+
+
+#VP = Versão PAciente
+
+#VPS = Profissional de Saúde 
+
+OND_1_VP <- "OND_1_VP.conllu"
+OND_2_VP <- "OND_2_VP.conllu"
+OND_3_VP <- "OND_3_VP.conllu"
+OND_4_VP <- "OND_4_VP.conllu"
+
+OND_1_VPS <- "OND_1_VPS.conllu"
+OND_2_VPS <- "OND_2_VPS.conllu"
+OND_3_VPS <- "OND_3_VPS.conllu"
+OND_4_VPS <- "OND_4_VPS.conllu"
+
+
+
+OND_1_VP <- udpipe_read_conllu(OND_1_VP)
+OND_2_VP <- udpipe_read_conllu(OND_2_VP)
+OND_3_VP <- udpipe_read_conllu(OND_3_VP)
+OND_4_VP <- udpipe_read_conllu(OND_4_VP)
+
+OND_1_VPS <- udpipe_read_conllu(OND_1_VPS)
+OND_2_VPS <- udpipe_read_conllu(OND_2_VPS)
+OND_3_VPS <- udpipe_read_conllu(OND_3_VPS)
+OND_4_VPS <- udpipe_read_conllu(OND_4_VPS)
+
+
+
+
+INS_1_VP <- "INS_1_VP.conllu"
+INS_2_VP <- "INS_2_VP.conllu"
+INS_3_VP <- "INS_3_VP.conllu"
+INS_4_VP <- "INS_4_VP.conllu"
+
+INS_1_VPS <- "INS_1_VPS.conllu"
+INS_2_VPS <- "INS_2_VPS.conllu"
+INS_3_VPS <- "INS_3_VPS.conllu"
+INS_4_VPS <- "INS_4_VPS.conllu"
+
+
+
+INS_1_VP <- udpipe_read_conllu(INS_1_VP)
+INS_2_VP <- udpipe_read_conllu(INS_2_VP)
+INS_3_VP <- udpipe_read_conllu(INS_3_VP)
+INS_4_VP <- udpipe_read_conllu(INS_4_VP)
+
+INS_1_VPS <- udpipe_read_conllu(INS_1_VPS)
+INS_2_VPS <- udpipe_read_conllu(INS_2_VPS)
+INS_3_VPS <- udpipe_read_conllu(INS_3_VPS)
+INS_4_VPS <- udpipe_read_conllu(INS_4_VPS)
+
+
+
+ENL_1_VP <- "ENL_1_VP.conllu"
+ENL_2_VP <- "ENL_2_VP.conllu"
+ENL_3_VP <- "ENL_3_VP.conllu"
+ENL_4_VP <- "ENL_4_VP.conllu"
+
+ENL_1_VPS <- "ENL_1_VPS.conllu"
+ENL_2_VPS <- "ENL_2_VPS.conllu"
+ENL_3_VPS <- "ENL_3_VPS.conllu"
+ENL_4_VPS <- "ENL_4_VPS.conllu"
+
+
+ENL_1_VP <- udpipe_read_conllu(ENL_1_VP)
+ENL_2_VP <- udpipe_read_conllu(ENL_2_VP)
+ENL_3_VP <- udpipe_read_conllu(ENL_3_VP)
+ENL_4_VP <- udpipe_read_conllu(ENL_4_VP)
+
+ENL_1_VPS <- udpipe_read_conllu(ENL_1_VPS)
+ENL_2_VPS <- udpipe_read_conllu(ENL_2_VPS)
+ENL_3_VPS <- udpipe_read_conllu(ENL_3_VPS)
+ENL_4_VPS <- udpipe_read_conllu(ENL_4_VPS)
+
+```
+
+## OND + INS + ENL {.tabset}
+
+
+### Versão Paciente
+
+```{r }
+paciente <- rbind(ENL_1_VP,ENL_2_VP,ENL_3_VP,ENL_4_VP,
+                  INS_1_VP,INS_2_VP,INS_3_VP,INS_4_VP,
+                  OND_1_VP,OND_2_VP,OND_3_VP,OND_4_VP)
+
+# gráfico % adjetivos
+selecao <- subset(paciente,paciente$upos=="ADJ") 
+x <-sort(table(selecao$lemma)) 
+plt<-textplot_bar(x,top=20, panel="ADJ Paciente",xlab="Frequency", col.panel="lightblue",cextext=0.75, addpct=TRUE,cexpct=0.5)
+plt
+
+
+# gráfico % verbos
+selecao <- subset(paciente,paciente$upos=="VERB") 
+x <-sort(table(selecao$lemma)) 
+plt<-textplot_bar(x,top=20, panel="VERB Paciente",xlab="Frequency", col.panel="lightblue",cextext=0.75, addpct=TRUE,cexpct=0.5)
+plt
+
+
+# gráfico % substantivos
+selecao <- subset(paciente,paciente$upos=="NOUN") 
+x <-sort(table(selecao$lemma)) 
+plt<-textplot_bar(x,top=20, panel="NOUN Paciente",xlab="Frequency", col.panel="lightblue",cextext=0.75, addpct=TRUE,cexpct=0.5)
+plt
+
+
+## Find the most frequent UPOS tags associated with root tokens 
+root_stats <- subset(paciente, head_token_id == 0)  # Corrected column name
+root_upos_stats <- txt_freq(root_stats$upos)
+root_upos_stats$key <- factor(root_upos_stats$key, levels = rev(root_upos_stats$key))
+barchart(key ~ freq, data = root_upos_stats, col = "cadetblue", 
+         main = "Contraindicações OND+INS+ENL Bula Paciente", 
+         xlab = "Freq")
+
+
+# gráfico % UPOS Tags
+all_upos_stats <- txt_freq(paciente$upos)
+all_upos_stats$key <- factor(all_upos_stats$key, levels = rev(all_upos_stats$key))
+plt<-textplot_bar(all_upos_stats,top=20, panel="UPOS Tags Pacientes",xlab="Frequency", col.panel="lightblue",cextext=0.75, addpct=TRUE,cexpct=0.5)
+plt
+
+# gráfico % Deprel Tags
+all_deprel_stats <- txt_freq(paciente$dep_rel)
+all_deprel_stats$key <- factor(all_deprel_stats$key, levels = rev(all_deprel_stats$key))
+plt<-textplot_bar(all_deprel_stats,top=20, panel="Deprel Tags Pacientes",xlab="Frequency", col.panel="lightblue",cextext=0.75, addpct=TRUE,cexpct=0.5)
+plt
+
+
+anno <- paciente
+biterms<-as.data.table(anno) 
+biterms<-biterms[,cooccurrence(x=lemma, relevant=upos%in%c("NOUN","PROPN","ADJ"), skipgram=2),by=list(doc_id)]
+x<-merge(anno,anno, by.x=c("doc_id","paragraph_id","sentence_id","head_token_id"), by.y=c("doc_id","paragraph_id","sentence_id","token_id"), all.x=TRUE,all.y=FALSE,suffixes=c("","_parent"),sort=FALSE)
+x<-subset(x,dep_rel%in%c("obj","amod")) 
+x$topic<-factor(x$dep_rel) 
+topiclabels<-levels(x$topic) 
+x$topic<-as.integer(x$topic)
+biterms<-data.frame(term1=x$lemma,term2=x$lemma_parent, topic=x$topic,stringsAsFactors=FALSE)
+terminology<-document_term_frequencies(x,document="topic", term=c("lemma","lemma_parent"))
+
+terminology<-document_term_frequencies_statistics(terminology)
+
+terminology<-terminology[order(terminology$tf_idf,decreasing=TRUE),]
+
+terminology<-terminology[,head(.SD,50),by=list(topic=doc_id)]
+
+terminology<-data.frame(topic=terminology$topic, token=terminology$term, probability=1,stringsAsFactors=FALSE)
+
+plt<-textplot_bitermclusters(terminology,biterms, labels=topiclabels, 
+                             title="Objectsofverbsandadjectives-nouns", subtitle="Top50bygroup") 
+
+plt
+
+```
+
+### Versão Profissionais da Saúde
+
+```{r }
+profissionais_saude <- rbind(ENL_1_VPS,ENL_2_VPS,ENL_3_VPS,ENL_4_VPS,
+                  INS_1_VPS,INS_2_VPS,INS_3_VPS,INS_4_VPS,
+                  OND_1_VPS,OND_2_VPS,OND_3_VPS,OND_4_VPS)
+
+# gráfico % adjetivos
+selecao <- subset(profissionais_saude,profissionais_saude$upos=="ADJ") 
+x <-sort(table(selecao$lemma)) 
+plt<-textplot_bar(x,top=20, panel="ADJ Prof Saúde",xlab="Frequency", col.panel="lightblue",cextext=0.75, addpct=TRUE,cexpct=0.5)
+plt
+
+
+# gráfico % verbos
+selecao <- subset(profissionais_saude,profissionais_saude$upos=="VERB") 
+x <-sort(table(selecao$lemma)) 
+plt<-textplot_bar(x,top=20, panel="VERB Prof Saúde",xlab="Frequency", col.panel="lightblue",cextext=0.75, addpct=TRUE,cexpct=0.5)
+plt
+
+
+# gráfico % substantivos
+selecao <- subset(profissionais_saude,profissionais_saude$upos=="NOUN") 
+x <-sort(table(selecao$lemma)) 
+plt<-textplot_bar(x,top=20, panel="NOUN Prof Saúde",xlab="Frequency", col.panel="lightblue",cextext=0.75, addpct=TRUE,cexpct=0.5)
+plt
+
+
+## Find the most frequent UPOS tags associated with root tokens 
+root_stats <- subset(profissionais_saude, head_token_id == 0)  # Corrected column name
+root_upos_stats <- txt_freq(root_stats$upos)
+root_upos_stats$key <- factor(root_upos_stats$key, levels = rev(root_upos_stats$key))
+barchart(key ~ freq, data = root_upos_stats, col = "cadetblue", 
+         main = "Contraindicações OND+INS+ENL Bula Prof Saúde", 
+         xlab = "Freq")
+
+# gráfico % UPOS Tags
+all_upos_stats <- txt_freq(profissionais_saude$upos)
+all_upos_stats$key <- factor(all_upos_stats$key, levels = rev(all_upos_stats$key))
+plt<-textplot_bar(all_upos_stats,top=20, panel="UPOS Tags Prof Saúde",xlab="Frequency", col.panel="lightblue",cextext=0.75, addpct=TRUE,cexpct=0.5)
+plt
+
+# gráfico % Deprel Tags
+all_deprel_stats <- txt_freq(profissionais_saude$dep_rel)
+all_deprel_stats$key <- factor(all_deprel_stats$key, levels = rev(all_deprel_stats$key))
+plt<-textplot_bar(all_deprel_stats,top=20, panel="Deprel Tags Prof Saúde",xlab="Frequency", col.panel="lightblue",cextext=0.75, addpct=TRUE,cexpct=0.5)
+plt
+
+
+anno <- profissionais_saude
+biterms<-as.data.table(anno) 
+biterms<-biterms[,cooccurrence(x=lemma, relevant=upos%in%c("NOUN","PROPN","ADJ"), skipgram=2),by=list(doc_id)]
+x<-merge(anno,anno, by.x=c("doc_id","paragraph_id","sentence_id","head_token_id"), by.y=c("doc_id","paragraph_id","sentence_id","token_id"), all.x=TRUE,all.y=FALSE,suffixes=c("","_parent"),sort=FALSE)
+x<-subset(x,dep_rel%in%c("obj","amod")) 
+x$topic<-factor(x$dep_rel) 
+topiclabels<-levels(x$topic) 
+x$topic<-as.integer(x$topic)
+biterms<-data.frame(term1=x$lemma,term2=x$lemma_parent, topic=x$topic,stringsAsFactors=FALSE)
+terminology<-document_term_frequencies(x,document="topic", term=c("lemma","lemma_parent"))
+
+terminology<-document_term_frequencies_statistics(terminology)
+
+terminology<-terminology[order(terminology$tf_idf,decreasing=TRUE),]
+
+terminology<-terminology[,head(.SD,50),by=list(topic=doc_id)]
+
+terminology<-data.frame(topic=terminology$topic, token=terminology$term, probability=1,stringsAsFactors=FALSE)
+
+plt<-textplot_bitermclusters(terminology,biterms, labels=topiclabels, 
+                             title="Objectsofverbsandadjectives-nouns", subtitle="Top50bygroup") 
+
+plt
+
+
+
+```
+
+
+### Versão Paciente + Profissionais da Saúde
+
+```{r }
+todos <- rbind(paciente,profissionais_saude)
+
+# gráfico % adjetivos
+selecao <- subset(todos,todos$upos=="ADJ") 
+x <-sort(table(selecao$lemma)) 
+plt<-textplot_bar(x,top=20, panel="ADJ",xlab="Frequency", col.panel="lightblue",cextext=0.75, addpct=TRUE,cexpct=0.5)
+plt
+
+
+# gráfico % verbos
+selecao <- subset(todos,todos$upos=="VERB") 
+x <-sort(table(selecao$lemma)) 
+plt<-textplot_bar(x,top=20, panel="VERB",xlab="Frequency", col.panel="lightblue",cextext=0.75, addpct=TRUE,cexpct=0.5)
+plt
+
+
+# gráfico % substantivos
+selecao <- subset(todos,todos$upos=="NOUN") 
+x <-sort(table(selecao$lemma)) 
+plt<-textplot_bar(x,top=20, panel="NOUN",xlab="Frequency", col.panel="lightblue",cextext=0.75, addpct=TRUE,cexpct=0.5)
+plt
+
+
+## Find the most frequent UPOS tags associated with root tokens 
+root_stats <- subset(todos, head_token_id == 0)  # Corrected column name
+root_upos_stats <- txt_freq(root_stats$upos)
+root_upos_stats$key <- factor(root_upos_stats$key, levels = rev(root_upos_stats$key))
+barchart(key ~ freq, data = root_upos_stats, col = "cadetblue", 
+         main = "Contraindicações OND+INS+ENL Bula", 
+         xlab = "Freq")
+
+# gráfico % UPOS Tags
+all_upos_stats <- txt_freq(todos$upos)
+all_upos_stats$key <- factor(all_upos_stats$key, levels = rev(all_upos_stats$key))
+plt<-textplot_bar(all_upos_stats,top=20, panel="UPOS Tags",xlab="Frequency", col.panel="lightblue",cextext=0.75, addpct=TRUE,cexpct=0.5)
+plt
+
+
+# gráfico % Deprel Tags
+all_deprel_stats <- txt_freq(todos$dep_rel)
+all_deprel_stats$key <- factor(all_deprel_stats$key, levels = rev(all_deprel_stats$key))
+plt<-textplot_bar(all_deprel_stats,top=20, panel="Deprel Tags Prof Saúde",xlab="Frequency", col.panel="lightblue",cextext=0.75, addpct=TRUE,cexpct=0.5)
+plt
+
+
+anno <- todos
+biterms<-as.data.table(anno) 
+biterms<-biterms[,cooccurrence(x=lemma, relevant=upos%in%c("NOUN","PROPN","ADJ"), skipgram=2),by=list(doc_id)]
+x<-merge(anno,anno, by.x=c("doc_id","paragraph_id","sentence_id","head_token_id"), by.y=c("doc_id","paragraph_id","sentence_id","token_id"), all.x=TRUE,all.y=FALSE,suffixes=c("","_parent"),sort=FALSE)
+x<-subset(x,dep_rel%in%c("obj","amod")) 
+x$topic<-factor(x$dep_rel) 
+topiclabels<-levels(x$topic) 
+x$topic<-as.integer(x$topic)
+biterms<-data.frame(term1=x$lemma,term2=x$lemma_parent, topic=x$topic,stringsAsFactors=FALSE)
+terminology<-document_term_frequencies(x,document="topic", term=c("lemma","lemma_parent"))
+
+terminology<-document_term_frequencies_statistics(terminology)
+
+terminology<-terminology[order(terminology$tf_idf,decreasing=TRUE),]
+
+terminology<-terminology[,head(.SD,50),by=list(topic=doc_id)]
+
+terminology<-data.frame(topic=terminology$topic, token=terminology$term, probability=1,stringsAsFactors=FALSE)
+
+plt<-textplot_bitermclusters(terminology,biterms, labels=topiclabels, 
+                             title="Objectsofverbsandadjectives-nouns", subtitle="Top50bygroup") 
+
+plt
+
+```
